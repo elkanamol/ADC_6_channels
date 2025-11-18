@@ -14,11 +14,14 @@ extern ADC_HandleTypeDef hadc1;
 extern volatile uint32_t raw_LISXXXALH[ADC_CHANNEL_COUNT]; 
 
 /* Constants */
+
+// Debug variables to track when the ADC failed
 static uint32_t last_config_status = 0;
 static uint32_t last_start_status = 0;
 static uint32_t last_poll_status = 0;
 static uint32_t conversion_errors = 0;
 
+// Higher then ADC max value (12-bit = 4095) to indicate errors
 typedef enum {
   ADC_ERROR_NONE = 0xFFFF,
   ADC_ERROR_CONFIG = 0xFFFE,
@@ -47,7 +50,8 @@ void analogSensor_operation(uint8_t snsrID) {
     return;
   }
 
-  // (void)HAL_ADC_Stop(&hadc1);
+  // the sConfig are set per the STM32F746GZ HAL API.
+  // need to adjust for other MCUs
   ADC_ChannelConfTypeDef sConfig = {0};
   sConfig.Rank = ADC_REGULAR_RANK_1;
   sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
@@ -106,6 +110,15 @@ void analogSensor_operation(uint8_t snsrID) {
   HAL_ADC_Stop(&hadc1);
 }
 
+/* Helper functions */
+
+/**
+ * @brief Read all channels sequentially
+ * @param total_channels Number of channels to read
+ * @note This function is not reentrant / not thread-safe.
+ *
+ * @returns void
+ */
 void analogSensor_operation_all_channels(uint8_t total_channels) {
   for (uint8_t i = 0; i < total_channels; i++) {
     analogSensor_operation(i);
@@ -113,12 +126,19 @@ void analogSensor_operation_all_channels(uint8_t total_channels) {
 }
 
 /**
- * Get error count for debugging
+ * @brief Get error count for debugging
+ * @returns Total conversion errors
  */
 uint32_t analogSensor_getErrorCount(void) { return conversion_errors; }
 
-/**s
- * Get last HAL status codes for debugging
+/**
+ * @brief Get last HAL status codes for debugging
+ *
+ * @param config pointer to store last config status
+ * @param start pointer to store last start status
+ * @param poll pointer to store last poll status
+ *
+ * @returns void
  */
 void analogSensor_getDebugStatus(uint32_t *config, uint32_t *start,
                                  uint32_t *poll) {
@@ -128,7 +148,7 @@ void analogSensor_getDebugStatus(uint32_t *config, uint32_t *start,
 }
 
 /**
- * Reset error counter
+ * @brief Reset error counter
  */
 void analogSensor_resetErrors(void) {
   conversion_errors = 0;
