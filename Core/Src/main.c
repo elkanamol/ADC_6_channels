@@ -19,11 +19,14 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
-#include "dma.h"
 #include "gpio.h"
+#include "usart.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "adc_conversions.h"
+#include <stdio.h>
+#include <string.h>
 
 /* USER CODE END Includes */
 
@@ -34,6 +37,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define ADC_CHANNEL_COUNT 6 // Assuming buffer size is 6
 
 /* USER CODE END PD */
 
@@ -45,7 +49,15 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint16_t adc_dma_buffer[6];
+/* DMA buffer (half-word) used by ADC DMA in circular mode. Keep volatile as
+  both ISR and main context access it. */
+volatile uint32_t adc_dma_buffer[ADC_CHANNEL_COUNT];
+/* 32-bit raw copy of latest samples. Other modules read these without
+  engaging ADC/HAL functions. */
+volatile uint32_t raw_LISXXXALH[ADC_CHANNEL_COUNT];
+/* adc_data_ready: 0 = no new, 1 = half ready, 2 = full ready. Consumer should
+  reset it to 0 after handling. */
+volatile uint8_t adc_data_ready = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -57,10 +69,30 @@ static void MPU_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
-{
+// void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc) {
+//   if (hadc->Instance == ADC1) {
+//     /* copy first half (indices 0..2) quickly in ISR context */
+//     raw_LISXXXALH[0] = (uint32_t)adc_dma_buffer[0];
+//     raw_LISXXXALH[1] = (uint32_t)adc_dma_buffer[1];
+//     raw_LISXXXALH[2] = (uint32_t)adc_dma_buffer[2];
+//     adc_data_ready = 1;
+//   }
+// }
 
-}
+// void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+// {
+//   if (hadc->Instance == ADC1) {
+//     /* copy second half (indices 3..5) quickly in ISR context */
+//     raw_LISXXXALH[0] = (uint32_t)adc_dma_buffer[0];
+//     raw_LISXXXALH[1] = (uint32_t)adc_dma_buffer[1];
+//     raw_LISXXXALH[2] = (uint32_t)adc_dma_buffer[2];
+//     raw_LISXXXALH[3] = (uint32_t)adc_dma_buffer[3];
+//     raw_LISXXXALH[4] = (uint32_t)adc_dma_buffer[4];
+//     raw_LISXXXALH[5] = (uint32_t)adc_dma_buffer[5];
+//     adc_data_ready = 1;
+//     HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_0);
+//   }
+// }
 /* USER CODE END 0 */
 
 /**
@@ -95,12 +127,12 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
   MX_ADC1_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-  if (HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_dma_buffer, 6) != HAL_OK) {
-    Error_Handler();
-  }
+  // if (HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_dma_buffer, 6) != HAL_OK) {
+  //   Error_Handler();
+  // }
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -110,6 +142,28 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+    // Toggle GPIO for timing measurement
+    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_0, GPIO_PIN_SET);
+
+    // Sample all 6 channels
+    for (int i = 0; i < ADC_CHANNEL_COUNT; i++) {
+      analogSensor_operation(i);
+    }
+
+    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_0, GPIO_PIN_RESET);
+
+    // Print all channel values
+    char buf[200];
+    snprintf(buf, sizeof(buf),
+             "ADC: CH0=%u CH1=%u CH2=%u CH3=%u CH4=%u CH5=%u | Errors=%u\r\n",
+             (unsigned int)raw_LISXXXALH[0], (unsigned int)raw_LISXXXALH[1],
+             (unsigned int)raw_LISXXXALH[2], (unsigned int)raw_LISXXXALH[3],
+             (unsigned int)raw_LISXXXALH[4], (unsigned int)raw_LISXXXALH[5],
+             (unsigned int)analogSensor_getErrorCount());
+    HAL_UART_Transmit(&huart3, (uint8_t *)buf, strlen(buf), HAL_MAX_DELAY);
+    HAL_Delay(1); // 1000 Hz for debugging
+
   }
   /* USER CODE END 3 */
 }

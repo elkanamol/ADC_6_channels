@@ -50,9 +50,21 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
 )
 
+# Application sources (Core)
+file(GLOB_RECURSE USER_SOURCES
+        "${CMAKE_SOURCE_DIR}/Core/Src/*.c"
+)
+if(USER_SOURCES)
+    target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${USER_SOURCES})
+endif()
+
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
+)
+
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
+    ${CMAKE_SOURCE_DIR}/Core/Inc
 )
 
 # Add project symbols (macros)
