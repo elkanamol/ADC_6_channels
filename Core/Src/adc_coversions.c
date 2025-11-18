@@ -34,23 +34,22 @@ typedef enum {
 /**
  * @brief Acquire and process one analog sensor (single ADC channel).
  *
+ * @param[in] snsrID Channel index (0..5).
+ * 
  * @note the ADC must be initialized. Not reentrant / not thread-safe.
- * Error markers in raw_LISXXXALH[]:
+ * @note Error markers in raw_LISXXXALH[]:
  * 0xFFFF = Invalid channel ID,
  * 0xFFFE = Config error,
  * 0xFFFD = Start error,
  * 0xFFFC = Timeout error
- *
- * @param[in] snsrID Channel index (0..5).
- *
  * @note ADC must be initialized. Not reentrant / not thread-safe.
  */
 void analogSensor_operation(uint8_t snsrID) {
-  if (snsrID >= ADC_CHANNEL_COUNT) { // prevent overflow
+  if (snsrID >= ADC_CHANNEL_COUNT) { // prevent overflow, silent failure
     return;
   }
 
-  // the sConfig are set per the STM32F746GZ HAL API.
+  // the sConfig are set per the STM32F7xx HAL API.
   // need to adjust for other MCUs
   ADC_ChannelConfTypeDef sConfig = {0};
   sConfig.Rank = ADC_REGULAR_RANK_1;
@@ -142,6 +141,9 @@ uint32_t analogSensor_getErrorCount(void) { return conversion_errors; }
  */
 void analogSensor_getDebugStatus(uint32_t *config, uint32_t *start,
                                  uint32_t *poll) {
+  if (config == NULL || start == NULL || poll == NULL) {
+    return; // Silent failure on null pointers
+  }
   *config = last_config_status;
   *start = last_start_status;
   *poll = last_poll_status;

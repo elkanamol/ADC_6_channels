@@ -64,8 +64,7 @@ void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES; // ← CHANGED: Slower but more
-                                                   // stable for debugging
+  sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES; 
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
