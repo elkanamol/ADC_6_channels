@@ -19,8 +19,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
-#include "gpio.h"
 #include "usart.h"
+#include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -49,15 +49,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-/* DMA buffer (half-word) used by ADC DMA in circular mode. Keep volatile as
-  both ISR and main context access it. */
-volatile uint32_t adc_dma_buffer[ADC_CHANNEL_COUNT];
-/* 32-bit raw copy of latest samples. Other modules read these without
-  engaging ADC/HAL functions. */
-volatile uint32_t raw_LISXXXALH[ADC_CHANNEL_COUNT];
-/* adc_data_ready: 0 = no new, 1 = half ready, 2 = full ready. Consumer should
-  reset it to 0 after handling. */
-volatile uint8_t adc_data_ready = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -69,30 +61,7 @@ static void MPU_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-// void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc) {
-//   if (hadc->Instance == ADC1) {
-//     /* copy first half (indices 0..2) quickly in ISR context */
-//     raw_LISXXXALH[0] = (uint32_t)adc_dma_buffer[0];
-//     raw_LISXXXALH[1] = (uint32_t)adc_dma_buffer[1];
-//     raw_LISXXXALH[2] = (uint32_t)adc_dma_buffer[2];
-//     adc_data_ready = 1;
-//   }
-// }
 
-// void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
-// {
-//   if (hadc->Instance == ADC1) {
-//     /* copy second half (indices 3..5) quickly in ISR context */
-//     raw_LISXXXALH[0] = (uint32_t)adc_dma_buffer[0];
-//     raw_LISXXXALH[1] = (uint32_t)adc_dma_buffer[1];
-//     raw_LISXXXALH[2] = (uint32_t)adc_dma_buffer[2];
-//     raw_LISXXXALH[3] = (uint32_t)adc_dma_buffer[3];
-//     raw_LISXXXALH[4] = (uint32_t)adc_dma_buffer[4];
-//     raw_LISXXXALH[5] = (uint32_t)adc_dma_buffer[5];
-//     adc_data_ready = 1;
-//     HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_0);
-//   }
-// }
 /* USER CODE END 0 */
 
 /**

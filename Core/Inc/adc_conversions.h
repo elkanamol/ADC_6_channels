@@ -81,7 +81,8 @@ typedef struct {
 /* Exported variables --------------------------------------------------------*/
 
 /**
- * @brief ADC sample array (shared with other modules)
+ * @brief ADC sample array (volatile for ISR/main access), declared here, use as
+ * global in main.c.
  * @note Values 0-4095 are valid ADC readings (12-bit)
  * @note Values >= 0xFFFC indicate errors:
  *       - 0xFFFE: Configuration error
@@ -89,7 +90,6 @@ typedef struct {
  *       - 0xFFFC: Timeout error
  */
 extern volatile uint32_t raw_LISXXXALH[ADC_CONVERSIONS_CHANNEL_COUNT];
-
 /* Exported functions --------------------------------------------------------*/
 
 /**

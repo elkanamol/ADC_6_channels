@@ -7,16 +7,18 @@
  ******************************************************************************
  */
 
+#include "adc_conversions.h"
 #include "adc.h"
 #include "main.h"
-#include "adc_conversions.h"
 
 /* Private defines -----------------------------------------------------------*/
 #define ADC_POLL_TIMEOUT_MS 10
 
 /* External variables --------------------------------------------------------*/
 extern ADC_HandleTypeDef hadc1;
-extern volatile uint32_t raw_LISXXXALH[ADC_CONVERSIONS_CHANNEL_COUNT];
+
+/* ADC sample storage (definition shared via adc_conversions.h) */
+volatile uint32_t raw_LISXXXALH[ADC_CONVERSIONS_CHANNEL_COUNT] = {0};
 
 /* Private types -------------------------------------------------------------*/
 
@@ -35,32 +37,32 @@ static ADC_ErrorInfo_t adc_errors = {.total_errors = 0,
                                      .last_error_status = HAL_OK,
                                      .last_failed_channel = 0xFF};
 
-/* ADC channel configurations (C99 designated initializers) */
+/* ADC channel configurations */
 static ADC_ChannelConfTypeDef sConfig[ADC_CONVERSIONS_CHANNEL_COUNT] = {
-    [0] = {.Channel = ADC_CHANNEL_0,
-           .Rank = ADC_REGULAR_RANK_1,
-           .SamplingTime = ADC_SAMPLETIME_15CYCLES,
-           .Offset = 0},
-    [1] = {.Channel = ADC_CHANNEL_1,
-           .Rank = ADC_REGULAR_RANK_1,
-           .SamplingTime = ADC_SAMPLETIME_15CYCLES,
-           .Offset = 0},
-    [2] = {.Channel = ADC_CHANNEL_2,
-           .Rank = ADC_REGULAR_RANK_1,
-           .SamplingTime = ADC_SAMPLETIME_15CYCLES,
-           .Offset = 0},
-    [3] = {.Channel = ADC_CHANNEL_3,
-           .Rank = ADC_REGULAR_RANK_1,
-           .SamplingTime = ADC_SAMPLETIME_15CYCLES,
-           .Offset = 0},
-    [4] = {.Channel = ADC_CHANNEL_4,
-           .Rank = ADC_REGULAR_RANK_1,
-           .SamplingTime = ADC_SAMPLETIME_15CYCLES,
-           .Offset = 0},
-    [5] = {.Channel = ADC_CHANNEL_5,
-           .Rank = ADC_REGULAR_RANK_1,
-           .SamplingTime = ADC_SAMPLETIME_15CYCLES,
-           .Offset = 0}};
+    {.Channel = ADC_CHANNEL_0,
+     .Rank = ADC_REGULAR_RANK_1,
+     .SamplingTime = ADC_SAMPLETIME_15CYCLES,
+     .Offset = 0},
+    {.Channel = ADC_CHANNEL_1,
+     .Rank = ADC_REGULAR_RANK_1,
+     .SamplingTime = ADC_SAMPLETIME_15CYCLES,
+     .Offset = 0},
+    {.Channel = ADC_CHANNEL_2,
+     .Rank = ADC_REGULAR_RANK_1,
+     .SamplingTime = ADC_SAMPLETIME_15CYCLES,
+     .Offset = 0},
+    {.Channel = ADC_CHANNEL_3,
+     .Rank = ADC_REGULAR_RANK_1,
+     .SamplingTime = ADC_SAMPLETIME_15CYCLES,
+     .Offset = 0},
+    {.Channel = ADC_CHANNEL_4,
+     .Rank = ADC_REGULAR_RANK_1,
+     .SamplingTime = ADC_SAMPLETIME_15CYCLES,
+     .Offset = 0},
+    {.Channel = ADC_CHANNEL_5,
+     .Rank = ADC_REGULAR_RANK_1,
+     .SamplingTime = ADC_SAMPLETIME_15CYCLES,
+     .Offset = 0}};
 
 /* Public functions ----------------------------------------------------------*/
 
@@ -74,6 +76,8 @@ void analogSensor_operation(uint8_t snsrID) {
     return;
   }
 
+  // using with static array to avoid runtime mutation issues and
+  // misconfigurations
   status = HAL_ADC_ConfigChannel(&hadc1, &sConfig[snsrID]);
   if (status != HAL_OK) {
     adc_errors.total_errors++;
