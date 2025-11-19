@@ -120,15 +120,19 @@ int main(void)
 
     HAL_GPIO_WritePin(GPIOG, GPIO_PIN_0, GPIO_PIN_RESET);
 
-    // Print all channel values
+    // Print all channel values over UART
+    ADC_ErrorInfo_t adc_errors;
+    analogSensor_getErrors(&adc_errors);
+
     char buf[200];
     snprintf(buf, sizeof(buf),
              "ADC: CH0=%4lu CH1=%4lu CH2=%4lu CH3=%4lu CH4=%4lu CH5=%4lu | "
-             "Errors=%lu\r\n",
+             "Errors=%lu last_failed_channel=%lu\r\n",
              (unsigned long)raw_LISXXXALH[0], (unsigned long)raw_LISXXXALH[1],
              (unsigned long)raw_LISXXXALH[2], (unsigned long)raw_LISXXXALH[3],
              (unsigned long)raw_LISXXXALH[4], (unsigned long)raw_LISXXXALH[5],
-             (unsigned long)analogSensor_getErrorCount());
+             (unsigned long)adc_errors.total_errors,
+             (unsigned long)adc_errors.last_failed_channel);
     HAL_UART_Transmit(&huart3, (uint8_t *)buf, strlen(buf), HAL_MAX_DELAY);
 
     HAL_Delay(100); // 10 Hz sampling rate
