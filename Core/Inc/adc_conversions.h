@@ -10,6 +10,8 @@
  *
  * This module provides simple, blocking ADC conversions using polling mode.
  * Each channel is configured and read individually.
+ * @note This code assumes that the ADC peripheral (hadc1) is already
+ * initialized and calibrated.
  *
  * Features:
  *   - Simple polling-based operation (blocking)
@@ -24,7 +26,7 @@
  *   - Added comprehensive error tracking
  *   - Increased sampling time (5→15 cycles) for stability
  *   - Improved code readability and maintainability
- * 
+ *
  * Usage Example:
  *   // Read single channel
  *   analogSensor_operation(0);

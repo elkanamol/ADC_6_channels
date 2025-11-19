@@ -12,12 +12,11 @@
 #include "adc_conversions.h"
 
 /* Private defines -----------------------------------------------------------*/
-#define ADC_CHANNEL_COUNT 6
 #define ADC_POLL_TIMEOUT_MS 10
 
 /* External variables --------------------------------------------------------*/
 extern ADC_HandleTypeDef hadc1;
-extern volatile uint32_t raw_LISXXXALH[ADC_CHANNEL_COUNT];
+extern volatile uint32_t raw_LISXXXALH[ADC_CONVERSIONS_CHANNEL_COUNT];
 
 /* Private types -------------------------------------------------------------*/
 
@@ -37,7 +36,7 @@ static ADC_ErrorInfo_t adc_errors = {.total_errors = 0,
                                      .last_failed_channel = 0xFF};
 
 /* ADC channel configurations (C99 designated initializers) */
-static ADC_ChannelConfTypeDef sConfig[ADC_CHANNEL_COUNT] = {
+static ADC_ChannelConfTypeDef sConfig[ADC_CONVERSIONS_CHANNEL_COUNT] = {
     [0] = {.Channel = ADC_CHANNEL_0,
            .Rank = ADC_REGULAR_RANK_1,
            .SamplingTime = ADC_SAMPLETIME_15CYCLES,
@@ -68,7 +67,10 @@ static ADC_ChannelConfTypeDef sConfig[ADC_CHANNEL_COUNT] = {
 void analogSensor_operation(uint8_t snsrID) {
   HAL_StatusTypeDef status;
 
-  if (snsrID >= ADC_CHANNEL_COUNT) {
+  if (snsrID >= ADC_CONVERSIONS_CHANNEL_COUNT) {
+    adc_errors.total_errors++;
+    adc_errors.last_error_status = HAL_ERROR;
+    adc_errors.last_failed_channel = snsrID;
     return;
   }
 
@@ -105,6 +107,9 @@ void analogSensor_operation(uint8_t snsrID) {
 }
 
 void analogSensor_operation_all_channels(uint8_t total_channels) {
+  if (total_channels > ADC_CONVERSIONS_CHANNEL_COUNT) {
+    total_channels = ADC_CONVERSIONS_CHANNEL_COUNT;
+  }
   for (uint8_t i = 0; i < total_channels; i++) {
     analogSensor_operation(i);
   }
