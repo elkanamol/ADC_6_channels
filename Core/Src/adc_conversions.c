@@ -3,6 +3,7 @@
  * @file    adc_conversions.c
  * @brief   Implementation of single-channel polling-based ADC conversions
  * @date    November 19, 2025
+ * @author  Elkana Molson
  ******************************************************************************
  */
 

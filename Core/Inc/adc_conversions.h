@@ -4,6 +4,7 @@
  * @file    adc_conversions.h
  * @brief   Single-channel polling-based ADC conversion API
  * @date    November 19, 2025
+ * @author  Elkana Molson
  ******************************************************************************
  * @attention
  *
@@ -16,6 +17,14 @@
  *   - Error codes stored in data array for easy detection
  *   - Lightweight and easy to debug
  *
+ * Bug fixes and improvements:
+ *   - Fixed overflow writing to LISXXXALH[] when snsrID invalid
+ *   - Fixed runtime mutation of sConfig (optimizer-safe)
+ *   - Fixed missing channel config per AN2834
+ *   - Added comprehensive error tracking
+ *   - Increased sampling time (5→15 cycles) for stability
+ *   - Improved code readability and maintainability
+ * 
  * Usage Example:
  *   // Read single channel
  *   analogSensor_operation(0);
