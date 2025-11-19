@@ -146,24 +146,23 @@ int main(void)
     // Toggle GPIO for timing measurement
     HAL_GPIO_WritePin(GPIOG, GPIO_PIN_0, GPIO_PIN_SET);
 
-    // Sample all 6 channels
-    for (int i = 0; i < ADC_CHANNEL_COUNT; i++) {
-      analogSensor_operation(i);
-    }
+    // Sample all 6 channels using helper function
+    analogSensor_operation_all_channels(ADC_CHANNEL_COUNT);
 
     HAL_GPIO_WritePin(GPIOG, GPIO_PIN_0, GPIO_PIN_RESET);
 
     // Print all channel values
     char buf[200];
     snprintf(buf, sizeof(buf),
-             "ADC: CH0=%u CH1=%u CH2=%u CH3=%u CH4=%u CH5=%u | Errors=%u\r\n",
-             (unsigned int)raw_LISXXXALH[0], (unsigned int)raw_LISXXXALH[1],
-             (unsigned int)raw_LISXXXALH[2], (unsigned int)raw_LISXXXALH[3],
-             (unsigned int)raw_LISXXXALH[4], (unsigned int)raw_LISXXXALH[5],
-             (unsigned int)analogSensor_getErrorCount());
+             "ADC: CH0=%4lu CH1=%4lu CH2=%4lu CH3=%4lu CH4=%4lu CH5=%4lu | "
+             "Errors=%lu\r\n",
+             (unsigned long)raw_LISXXXALH[0], (unsigned long)raw_LISXXXALH[1],
+             (unsigned long)raw_LISXXXALH[2], (unsigned long)raw_LISXXXALH[3],
+             (unsigned long)raw_LISXXXALH[4], (unsigned long)raw_LISXXXALH[5],
+             (unsigned long)analogSensor_getErrorCount());
     HAL_UART_Transmit(&huart3, (uint8_t *)buf, strlen(buf), HAL_MAX_DELAY);
-    HAL_Delay(1); // 1000 Hz for debugging
 
+    HAL_Delay(100); // 10 Hz sampling rate
   }
   /* USER CODE END 3 */
 }
