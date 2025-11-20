@@ -2,7 +2,7 @@
  ******************************************************************************
  * @file    adc_conversions.c
  * @brief   Implementation of single-channel polling-based ADC conversions
- * @date    November 19, 2025
+ * @date    November 16, 2025
  * @author  Elkana Molson
  ******************************************************************************
  */
@@ -37,7 +37,10 @@ static ADC_ErrorInfo_t adc_errors = {.total_errors = 0,
                                      .last_error_status = HAL_OK,
                                      .last_failed_channel = 0xFF};
 
-/* ADC channel configurations */
+// if using STM32F7 series, uncomment the following line
+#define STM32F7xx_HAL_ADC_H // <<-- uncomment this line
+#ifdef STM32F7xx_HAL_ADC_H
+/* ADC channel configurations for STM32F756 (the MCU was tested with) */
 static ADC_ChannelConfTypeDef sConfig[ADC_CONVERSIONS_CHANNEL_COUNT] = {
     {.Channel = ADC_CHANNEL_0,
      .Rank = ADC_REGULAR_RANK_1,
@@ -63,7 +66,57 @@ static ADC_ChannelConfTypeDef sConfig[ADC_CONVERSIONS_CHANNEL_COUNT] = {
      .Rank = ADC_REGULAR_RANK_1,
      .SamplingTime = ADC_SAMPLETIME_15CYCLES,
      .Offset = 0}};
+#endif // STM32F7xx_HAL_ADC_H
 
+/* for STM32H7 series (per the original code) uncomment the following line */
+// #define STM32H7xx_HAL_ADC_H // <<-- uncomment this line
+#ifdef STM32H7xx_HAL_ADC_H
+/* ADC channel configurations for STM32H743 (for reference) */  
+static ADC_ChannelConfTypeDef sConfig[ADC_CONVERSIONS_CHANNEL_COUNT] = {
+    {.channel = ADC_CHANNEL_0,
+      .Rank = ADC_REGULAR_RANK_1,
+      .SamplingTime = ADC_SAMPLETIME_5CYCLE,
+      .SingleDiff = ADC_SINGLE_ENDED,
+      .OffsetNumber = ADC_OFFSET_NONE,
+      .Offset = 0},
+      {.channel = ADC_CHANNEL_1,
+      .Rank = ADC_REGULAR_RANK_1,
+      .SamplingTime = ADC_SAMPLETIME_5CYCLE,
+      .SingleDiff = ADC_SINGLE_ENDED,
+      .OffsetNumber = ADC_OFFSET_NONE,
+      .Offset = 0},
+      {.channel = ADC_CHANNEL_2,
+      .Rank = ADC_REGULAR_RANK_1,
+      .SamplingTime = ADC_SAMPLETIME_5CYCLE,
+      .SingleDiff = ADC_SINGLE_ENDED,
+      .OffsetNumber = ADC_OFFSET_NONE,
+      .Offset = 0},
+      {.channel = ADC_CHANNEL_3,
+      .Rank = ADC_REGULAR_RANK_1,
+      .SamplingTime = ADC_SAMPLETIME_5CYCLE,
+      .SingleDiff = ADC_SINGLE_ENDED,
+      .OffsetNumber = ADC_OFFSET_NONE,
+      .Offset = 0},
+      {.channel = ADC_CHANNEL_4,
+      .Rank = ADC_REGULAR_RANK_1,
+      .SamplingTime = ADC_SAMPLETIME_5CYCLE,
+      .SingleDiff = ADC_SINGLE_ENDED,
+      .OffsetNumber = ADC_OFFSET_NONE,
+      .Offset = 0},
+      {.channel = ADC_CHANNEL_5,
+      .Rank = ADC_REGULAR_RANK_1,
+      .SamplingTime = ADC_SAMPLETIME_5CYCLE,
+      .SingleDiff = ADC_SINGLE_ENDED,
+      .OffsetNumber = ADC_OFFSET_NONE,
+      .Offset = 0},
+      {.channel = ADC_CHANNEL_6,
+      .Rank = ADC_REGULAR_RANK_1,
+      .SamplingTime = ADC_SAMPLETIME_5_CYCLES,
+      .SingleDiff = ADC_SINGLE_ENDED,
+      .OffsetNumber = ADC_OFFSET_NONE,
+      .Offset = 0}
+    };
+#endif // STM32H7xx_HAL_ADC_H
 /* Public functions ----------------------------------------------------------*/
 
 void analogSensor_operation(uint8_t snsrID) {

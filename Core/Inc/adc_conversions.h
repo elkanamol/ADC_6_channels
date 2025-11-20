@@ -3,7 +3,7 @@
  ******************************************************************************
  * @file    adc_conversions.h
  * @brief   Single-channel polling-based ADC conversion API
- * @date    November 19, 2025
+ * @date    November 16, 2025
  * @author  Elkana Molson
  ******************************************************************************
  * @attention
@@ -13,20 +13,36 @@
  * @note This code assumes that the ADC peripheral (hadc1) is already
  * initialized and calibrated.
  *
+ * Assumptions to guide this design:
+ *   - The code was targeting STM32H7 series with HAL library per the HAL
+ macros.
+ *   - The sensors is MEMS accelerometer LISXXXALH series.
+ *   - The code using private LISXXXALH.h header for sensor-specific settings.
+ *   - ADC is configured for single-ended input
+ *   - 12-bit/14-bit resolution is used (per the original code line #30)
+ *   - raw_LISXXXALH[] type of uint32_t per the HAL_ADC_GetValue() return value.
+ *   - Polling mode is acceptable (no DMA). 
+ *   - per the DS of LIS331ALH,LIS344ALH, the sampling BW frequency is 1-2 kHz
+ *   - the timeout of polling was 10ms. 
+ *   - Therefore, a simple blocking read is acceptable for this use case.
+ * 
+ * Bug fixes and improvements:
+ *   - Fixed overflow writing to raw_LISXXXALH[] when snsrID invalid
+ *   - Fixed runtime mutation of sConfig (optimizer-safe)
+ *   - Reduce complexity and if/else checks. using fall through method.
+ *   - Added return checks for HAL functions, with error tracking
+ *   - Fixed missing channel config per AN2834
+ *   - Added comprehensive error tracking
+ *   - Increased sampling time (5→15 cycles) for stability
+ *   - Improved code readability and maintainability
+ *   - 
+ *
  * Features:
  *   - Simple polling-based operation (blocking)
  *   - Full error tracking and diagnostics
  *   - Error codes stored in data array for easy detection
  *   - Lightweight and easy to debug
- *
- * Bug fixes and improvements:
- *   - Fixed overflow writing to LISXXXALH[] when snsrID invalid
- *   - Fixed runtime mutation of sConfig (optimizer-safe)
- *   - Fixed missing channel config per AN2834
- *   - Added comprehensive error tracking
- *   - Increased sampling time (5→15 cycles) for stability
- *   - Improved code readability and maintainability
- *
+ * 
  * Usage Example:
  *   // Read single channel
  *   analogSensor_operation(0);
